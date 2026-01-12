@@ -46,7 +46,17 @@ import { Pagination } from "@/components/ui/pagination-nav";
 import { LoadingState, ErrorState } from "@/components/ui/states";
 import { useToast } from "@/hooks/use-toast";
 
-const CATEGORIES = ["Images", "Text", "Audio", "Video", "Code", "Productivity", "Marketing", "Research", "Other"];
+const CATEGORIES = [
+  "Images",
+  "Text",
+  "Audio",
+  "Video",
+  "Code",
+  "Productivity",
+  "Marketing",
+  "Research",
+  "Other",
+];
 const PRICING_OPTIONS: { value: PricingModel; label: string }[] = [
   { value: "free", label: "Free" },
   { value: "paid", label: "Paid" },
@@ -88,19 +98,28 @@ export default function AdminTools() {
       closeForm();
     },
     onError: (error: Error) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: ToolUpdate }) => api.updateTool(id, data),
+    mutationFn: ({ id, data }: { id: string; data: ToolUpdate }) =>
+      api.updateTool(id, data),
     onSuccess: () => {
       toast({ title: "Success", description: "Tool updated successfully." });
       queryClient.invalidateQueries({ queryKey: ["adminTools"] });
       closeForm();
     },
     onError: (error: Error) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 
@@ -112,7 +131,11 @@ export default function AdminTools() {
       setDeletingTool(null);
     },
     onError: (error: Error) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 
@@ -127,6 +150,7 @@ export default function AdminTools() {
       sourceUrl: "",
       officialUrl: "",
       logoUrl: "",
+      releasedAgo: "",
     });
     setIsFormOpen(true);
   };
@@ -139,6 +163,7 @@ export default function AdminTools() {
       category: tool.category,
       pricingDisplay: tool.pricingDisplay,
       pricingModel: tool.pricingModel,
+      releasedAgo: tool.releasedAgo,
       sourceUrl: tool.sourceUrl,
       officialUrl: tool.officialUrl || "",
       logoUrl: tool.logoUrl || "",
@@ -171,9 +196,14 @@ export default function AdminTools() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold">Manage Tools</h1>
-          <p className="text-muted-foreground">Add, edit, or remove AI tools from the platform.</p>
+          <p className="text-muted-foreground">
+            Add, edit, or remove AI tools from the platform.
+          </p>
         </div>
-        <Button onClick={openCreateForm} className="bg-primary text-primary-foreground hover:bg-primary/90">
+        <Button
+          onClick={openCreateForm}
+          className="bg-primary text-primary-foreground hover:bg-primary/90"
+        >
           <Plus className="h-4 w-4 mr-2" />
           Add New Tool
         </Button>
@@ -220,7 +250,9 @@ export default function AdminTools() {
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <StarRating rating={tool.avgRating} size="sm" />
-                        <span className="text-sm">{tool.avgRating.toFixed(1)}</span>
+                        <span className="text-sm">
+                          {tool.avgRating.toFixed(1)}
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell>{tool.reviewCount}</TableCell>
@@ -261,7 +293,9 @@ export default function AdminTools() {
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingTool ? "Edit Tool" : "Add New Tool"}</DialogTitle>
+            <DialogTitle>
+              {editingTool ? "Edit Tool" : "Add New Tool"}
+            </DialogTitle>
             <DialogDescription>
               {editingTool
                 ? "Update the tool information below."
@@ -275,7 +309,9 @@ export default function AdminTools() {
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
                 required
               />
             </div>
@@ -285,7 +321,9 @@ export default function AdminTools() {
               <Textarea
                 id="shortDescription"
                 value={formData.shortDescription}
-                onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, shortDescription: e.target.value })
+                }
                 required
               />
             </div>
@@ -295,7 +333,9 @@ export default function AdminTools() {
                 <Label>Category *</Label>
                 <Select
                   value={formData.category}
-                  onValueChange={(value) => setFormData({ ...formData, category: value })}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, category: value })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -315,7 +355,10 @@ export default function AdminTools() {
                 <Select
                   value={formData.pricingModel}
                   onValueChange={(value) =>
-                    setFormData({ ...formData, pricingModel: value as PricingModel })
+                    setFormData({
+                      ...formData,
+                      pricingModel: value as PricingModel,
+                    })
                   }
                 >
                   <SelectTrigger>
@@ -337,7 +380,9 @@ export default function AdminTools() {
               <Input
                 id="pricingDisplay"
                 value={formData.pricingDisplay}
-                onChange={(e) => setFormData({ ...formData, pricingDisplay: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, pricingDisplay: e.target.value })
+                }
                 placeholder="e.g., Free, $9.99/mo, Freemium"
                 required
               />
@@ -349,7 +394,22 @@ export default function AdminTools() {
                 id="sourceUrl"
                 type="url"
                 value={formData.sourceUrl}
-                onChange={(e) => setFormData({ ...formData, sourceUrl: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, sourceUrl: e.target.value })
+                }
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="releasedAgo">Released (friendly)</Label>
+              <Input
+                id="releasedAgo"
+                value={formData.releasedAgo || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, releasedAgo: e.target.value })
+                }
+                placeholder="e.g., '2 months ago'"
                 required
               />
             </div>
@@ -360,7 +420,9 @@ export default function AdminTools() {
                 id="officialUrl"
                 type="url"
                 value={formData.officialUrl || ""}
-                onChange={(e) => setFormData({ ...formData, officialUrl: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, officialUrl: e.target.value })
+                }
               />
             </div>
 
@@ -370,7 +432,9 @@ export default function AdminTools() {
                 id="logoUrl"
                 type="url"
                 value={formData.logoUrl || ""}
-                onChange={(e) => setFormData({ ...formData, logoUrl: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, logoUrl: e.target.value })
+                }
               />
             </div>
 
@@ -395,18 +459,24 @@ export default function AdminTools() {
       </Dialog>
 
       {/* Delete Confirmation */}
-      <AlertDialog open={!!deletingTool} onOpenChange={() => setDeletingTool(null)}>
+      <AlertDialog
+        open={!!deletingTool}
+        onOpenChange={() => setDeletingTool(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Tool</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{deletingTool?.name}"? This action cannot be undone.
+              Are you sure you want to delete "{deletingTool?.name}"? This
+              action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => deletingTool && deleteMutation.mutate(deletingTool.id)}
+              onClick={() =>
+                deletingTool && deleteMutation.mutate(deletingTool.id)
+              }
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {deleteMutation.isPending ? "Deleting..." : "Delete"}

@@ -1,4 +1,15 @@
-import { Tool, ToolCreate, ToolUpdate, Review, ReviewCreate, User, AuthResponse, PaginatedResponse, ToolFilters, ReviewStatus } from "@/types";
+import {
+  Tool,
+  ToolCreate,
+  ToolUpdate,
+  Review,
+  ReviewCreate,
+  User,
+  AuthResponse,
+  PaginatedResponse,
+  ToolFilters,
+  ReviewStatus,
+} from "@/types";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -27,12 +38,48 @@ class ApiClient {
       headers,
     });
 
+    // Try to parse the response body (if any)
+    const parsedBody = await response
+      .text()
+      .then((t) => {
+        try {
+          return JSON.parse(t);
+        } catch {
+          return t;
+        }
+      })
+      .catch(() => null);
+
     if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.detail || `API Error: ${response.status}`);
+      // Build a helpful error message from common shapes: { detail }, { message }, or raw text.
+      let message = `API Error: ${response.status}`;
+      if (parsedBody) {
+        if (typeof parsedBody === "string") {
+          message = parsedBody;
+        } else if (parsedBody.detail) {
+          message =
+            typeof parsedBody.detail === "string"
+              ? parsedBody.detail
+              : JSON.stringify(parsedBody.detail);
+        } else if (parsedBody.message) {
+          message =
+            typeof parsedBody.message === "string"
+              ? parsedBody.message
+              : JSON.stringify(parsedBody.message);
+        } else {
+          // Fallback to JSON string
+          try {
+            message = JSON.stringify(parsedBody);
+          } catch {
+            message = String(parsedBody);
+          }
+        }
+      }
+
+      throw new Error(message);
     }
 
-    return response.json();
+    return parsedBody as T;
   }
 
   // Public APIs
@@ -42,9 +89,10 @@ class ApiClient {
     if (filters.pageSize) params.set("pageSize", filters.pageSize.toString());
     if (filters.category) params.set("category", filters.category);
     if (filters.pricingModel?.length) {
-      filters.pricingModel.forEach(pm => params.append("pricingModel", pm));
+      filters.pricingModel.forEach((pm) => params.append("pricingModel", pm));
     }
-    if (filters.minRating) params.set("minRating", filters.minRating.toString());
+    if (filters.minRating)
+      params.set("minRating", filters.minRating.toString());
     if (filters.search) params.set("search", filters.search);
 
     return this.request<PaginatedResponse<Tool>>(`/tools?${params.toString()}`);
@@ -72,11 +120,18 @@ class ApiClient {
   }
 
   // Auth APIs
-  async signup(name: string, email: string, password: string): Promise<AuthResponse> {
-    const response = await this.request<{ access_token: string; user: any }>("/auth/signup", {
-      method: "POST",
-      body: JSON.stringify({ name, email, password }),
-    });
+  async signup(
+    name: string,
+    email: string,
+    password: string
+  ): Promise<AuthResponse> {
+    const response = await this.request<{ access_token: string; user: any }>(
+      "/auth/signup",
+      {
+        method: "POST",
+        body: JSON.stringify({ name, email, password }),
+      }
+    );
     return {
       token: response.access_token,
       user: response.user,
@@ -84,10 +139,13 @@ class ApiClient {
   }
 
   async login(email: string, password: string): Promise<AuthResponse> {
-    const response = await this.request<{ access_token: string; user: any }>("/auth/login", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-    });
+    const response = await this.request<{ access_token: string; user: any }>(
+      "/auth/login",
+      {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      }
+    );
     return {
       token: response.access_token,
       user: response.user,
@@ -95,7 +153,10 @@ class ApiClient {
   }
 
   // Admin APIs
-  async getAdminTools(page = 1, pageSize = 20): Promise<PaginatedResponse<Tool>> {
+  async getAdminTools(
+    page = 1,
+    pageSize = 20
+  ): Promise<PaginatedResponse<Tool>> {
     return this.request<PaginatedResponse<Tool>>(
       `/admin/tools?page=${page}&pageSize=${pageSize}`
     );
