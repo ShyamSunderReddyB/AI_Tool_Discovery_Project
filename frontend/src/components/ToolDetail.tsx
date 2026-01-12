@@ -1,7 +1,13 @@
-import React from "react"
-import { Tool } from "../types"
+import React from "react";
+import { Tool } from "../types";
 
-export default function ToolDetail({ tool, onClose }: { tool: Tool; onClose: () => void }) {
+export default function ToolDetail({
+  tool,
+  onClose,
+}: {
+  tool: Tool;
+  onClose: () => void;
+}) {
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -27,5 +33,5 @@ export default function ToolDetail({ tool, onClose }: { tool: Tool; onClose: () 
         </section>
       </div>
     </div>
-  )
+  );
 }
