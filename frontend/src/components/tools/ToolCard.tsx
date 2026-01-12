@@ -1,7 +1,12 @@
 import { Link } from "react-router-dom";
 import { ExternalLink, Eye, ThumbsUp } from "lucide-react";
 import { Tool } from "@/types";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StarRating } from "@/components/ui/star-rating";
@@ -12,6 +17,9 @@ interface ToolCardProps {
 }
 
 export function ToolCard({ tool }: ToolCardProps) {
+  // Some backends (e.g. Mongo) use `_id` instead of `id`.
+  // Use a tolerant lookup so links don't become `/tools/undefined`.
+  const toolId = (tool as any).id ?? (tool as any)._id ?? "";
   const pricingColors: Record<string, string> = {
     free: "bg-success/20 text-success",
     paid: "bg-warning/20 text-warning",
@@ -23,7 +31,7 @@ export function ToolCard({ tool }: ToolCardProps) {
   return (
     <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 card-elevated">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-      
+
       <CardHeader className="relative pb-3">
         <div className="flex items-start gap-3">
           <div className="relative flex-shrink-0">
@@ -41,7 +49,7 @@ export function ToolCard({ tool }: ToolCardProps) {
               </div>
             )}
           </div>
-          
+
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
               {tool.name}
@@ -60,7 +68,7 @@ export function ToolCard({ tool }: ToolCardProps) {
         <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
           {tool.shortDescription}
         </p>
-        
+
         <div className="flex flex-wrap gap-2">
           <Badge variant="outline" className="text-xs">
             {tool.category}
@@ -87,9 +95,14 @@ export function ToolCard({ tool }: ToolCardProps) {
           )}
           <span>{tool.releasedAgo}</span>
         </div>
-        
-        <Button asChild size="sm" variant="ghost" className="text-primary hover:text-primary hover:bg-primary/10">
-          <Link to={`/tools/${tool.id}`} className="flex items-center gap-1">
+
+        <Button
+          asChild
+          size="sm"
+          variant="ghost"
+          className="text-primary hover:text-primary hover:bg-primary/10"
+        >
+          <Link to={`/tools/${toolId}`} className="flex items-center gap-1">
             View
             <ExternalLink className="h-3 w-3" />
           </Link>

@@ -49,19 +49,36 @@ export default function AdminReviews() {
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["adminReviews", page, statusFilter],
     queryFn: () =>
-      api.getAdminReviews(statusFilter === "all" ? undefined : statusFilter, page),
+      api.getAdminReviews(
+        statusFilter === "all" ? undefined : statusFilter,
+        page
+      ),
   });
 
   const moderateMutation = useMutation({
-    mutationFn: ({ id, status, note }: { id: string; status: "approved" | "rejected"; note?: string }) =>
-      api.moderateReview(id, status, note),
+    mutationFn: ({
+      id,
+      status,
+      note,
+    }: {
+      id: string;
+      status: "approved" | "rejected";
+      note?: string;
+    }) => api.moderateReview(id, status, note),
     onSuccess: () => {
-      toast({ title: "Success", description: "Review moderated successfully." });
+      toast({
+        title: "Success",
+        description: "Review moderated successfully.",
+      });
       queryClient.invalidateQueries({ queryKey: ["adminReviews"] });
       closeModerateDialog();
     },
     onError: (error: Error) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 
@@ -94,7 +111,9 @@ export default function AdminReviews() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold">Moderate Reviews</h1>
-          <p className="text-muted-foreground">Approve or reject user reviews.</p>
+          <p className="text-muted-foreground">
+            Approve or reject user reviews.
+          </p>
         </div>
 
         <Select
@@ -146,66 +165,89 @@ export default function AdminReviews() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.items.map((review) => (
-                  <TableRow key={review.id}>
-                    <TableCell className="font-medium">
-                      {review.toolName || review.toolId}
-                    </TableCell>
-                    <TableCell>{review.userName}</TableCell>
-                    <TableCell>
-                      <StarRating rating={review.rating} size="sm" />
-                    </TableCell>
-                    <TableCell className="max-w-xs truncate">
-                      {review.comment}
-                    </TableCell>
-                    <TableCell>{formatDate(review.createdAt)}</TableCell>
-                    <TableCell>{getStatusBadge(review.status)}</TableCell>
-                    <TableCell className="text-right">
-                      {review.status === "pending" && (
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-success hover:text-success hover:bg-success/10"
-                            onClick={() =>
-                              setModeratingReview({ id: review.id, action: "approved" })
-                            }
-                          >
-                            <Check className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                            onClick={() =>
-                              setModeratingReview({ id: review.id, action: "rejected" })
-                            }
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {data.items.map((review) => {
+                  // Backend may return `_id` (e.g. Mongo). Be defensive and prefer `id` but
+                  // fall back to `_id` so moderation actions send a valid id.
+                  const reviewId =
+                    (review as any).id ?? (review as any)._id ?? "";
+
+                  return (
+                    <TableRow key={reviewId}>
+                      <TableCell className="font-medium">
+                        {review.toolName || review.toolId}
+                      </TableCell>
+                      <TableCell>
+                        {(review as any).userName ??
+                          (review as any).user?.name ??
+                          "Anonymous"}
+                      </TableCell>
+                      <TableCell>
+                        <StarRating rating={review.rating} size="sm" />
+                      </TableCell>
+                      <TableCell className="max-w-xs truncate">
+                        {review.comment}
+                      </TableCell>
+                      <TableCell>{formatDate(review.createdAt)}</TableCell>
+                      <TableCell>{getStatusBadge(review.status)}</TableCell>
+                      <TableCell className="text-right">
+                        {review.status === "pending" && (
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-success hover:text-success hover:bg-success/10"
+                              onClick={() =>
+                                setModeratingReview({
+                                  id: reviewId,
+                                  action: "approved",
+                                })
+                              }
+                            >
+                              <Check className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                              onClick={() =>
+                                setModeratingReview({
+                                  id: reviewId,
+                                  action: "rejected",
+                                })
+                              }
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>
 
           <Pagination
             currentPage={data.page}
-            totalPages={data.totalPages || Math.ceil(data.total / data.pageSize)}
+            totalPages={
+              data.totalPages || Math.ceil(data.total / data.pageSize)
+            }
             onPageChange={setPage}
           />
         </>
       )}
 
       {/* Moderation Dialog */}
-      <Dialog open={!!moderatingReview} onOpenChange={() => closeModerateDialog()}>
+      <Dialog
+        open={!!moderatingReview}
+        onOpenChange={() => closeModerateDialog()}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {moderatingReview?.action === "approved" ? "Approve" : "Reject"} Review
+              {moderatingReview?.action === "approved" ? "Approve" : "Reject"}{" "}
+              Review
             </DialogTitle>
             <DialogDescription>
               {moderatingReview?.action === "approved"
@@ -216,7 +258,9 @@ export default function AdminReviews() {
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Moderation Note (optional)</label>
+              <label className="text-sm font-medium">
+                Moderation Note (optional)
+              </label>
               <Textarea
                 value={moderationNote}
                 onChange={(e) => setModerationNote(e.target.value)}

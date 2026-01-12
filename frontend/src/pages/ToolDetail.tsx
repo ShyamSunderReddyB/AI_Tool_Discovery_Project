@@ -32,7 +32,12 @@ export default function ToolDetail() {
   const [reviewComment, setReviewComment] = useState("");
   const [reviewPage, setReviewPage] = useState(1);
 
-  const { data: tool, isLoading, isError, error } = useQuery({
+  const {
+    data: tool,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ["tool", id],
     queryFn: async () => {
       try {
@@ -116,7 +121,11 @@ export default function ToolDetail() {
       <div className="container py-8">
         <ErrorState
           title="Error loading tool"
-          description={error instanceof Error ? error.message : "Failed to fetch tool details from the database. Please check if the backend is running."}
+          description={
+            error instanceof Error
+              ? error.message
+              : "Failed to fetch tool details from the database. Please check if the backend is running."
+          }
         />
       </div>
     );
@@ -199,7 +208,10 @@ export default function ToolDetail() {
               </p>
 
               {tool.officialUrl && (
-                <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
+                <Button
+                  asChild
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                >
                   <a
                     href={tool.officialUrl}
                     target="_blank"
@@ -232,31 +244,55 @@ export default function ToolDetail() {
               <CardContent className="space-y-4">
                 {reviewsData?.items.length ? (
                   <>
-                    {reviewsData.items.map((review) => (
-                      <div
-                        key={review.id}
-                        className="p-4 rounded-lg bg-muted/50 border border-border/50"
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
-                              <span className="text-sm font-medium text-primary">
-                                {review.userName.charAt(0).toUpperCase()}
+                    {reviewsData.items.map((review) => {
+                      // Some backends may return a nested user object instead of `userName`,
+                      // or omit the name entirely. Be defensive to avoid runtime errors.
+                      const reviewUserName =
+                        (review as any).userName ??
+                        ((review as any).user?.name
+                          ? (review as any).user.name
+                          : undefined) ??
+                        "Anonymous";
+
+                      return (
+                        <div
+                          key={review.id}
+                          className="p-4 rounded-lg bg-muted/50 border border-border/50"
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
+                                <span className="text-sm font-medium text-primary">
+                                  {String(reviewUserName)
+                                    .charAt(0)
+                                    .toUpperCase()}
+                                </span>
+                              </div>
+                              <span className="font-medium">
+                                {reviewUserName}
                               </span>
                             </div>
-                            <span className="font-medium">{review.userName}</span>
+                            <span className="text-sm text-muted-foreground">
+                              {formatDate(review.createdAt)}
+                            </span>
                           </div>
-                          <span className="text-sm text-muted-foreground">
-                            {formatDate(review.createdAt)}
-                          </span>
+                          <StarRating
+                            rating={review.rating}
+                            size="sm"
+                            className="mb-2"
+                          />
+                          <p className="text-muted-foreground">
+                            {review.comment}
+                          </p>
                         </div>
-                        <StarRating rating={review.rating} size="sm" className="mb-2" />
-                        <p className="text-muted-foreground">{review.comment}</p>
-                      </div>
-                    ))}
+                      );
+                    })}
                     <Pagination
                       currentPage={reviewsData.page}
-                      totalPages={reviewsData.totalPages || Math.ceil(reviewsData.total / reviewsData.pageSize)}
+                      totalPages={
+                        reviewsData.totalPages ||
+                        Math.ceil(reviewsData.total / reviewsData.pageSize)
+                      }
                       onPageChange={setReviewPage}
                     />
                   </>
@@ -344,7 +380,9 @@ export default function ToolDetail() {
                       <Eye className="h-4 w-4" />
                       Views
                     </span>
-                    <span className="font-medium">{formatNumber(tool.views)}</span>
+                    <span className="font-medium">
+                      {formatNumber(tool.views)}
+                    </span>
                   </div>
                 )}
                 {tool.votes != null && (
@@ -353,7 +391,9 @@ export default function ToolDetail() {
                       <ThumbsUp className="h-4 w-4" />
                       Votes
                     </span>
-                    <span className="font-medium">{formatNumber(tool.votes)}</span>
+                    <span className="font-medium">
+                      {formatNumber(tool.votes)}
+                    </span>
                   </div>
                 )}
                 <div className="flex items-center justify-between">
