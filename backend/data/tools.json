@@ -1,0 +1,30 @@
+[
+  {
+    "id": "1",
+    "name": "Example Image Generator",
+    "url": "https://example.com/image-gen",
+    "description": "Generate images from prompts.",
+    "categories": [
+      "Image"
+    ],
+    "tags": [
+      "image",
+      "generator",
+      "vision"
+    ]
+  },
+  {
+    "id": "2",
+    "name": "Example Text Summarizer",
+    "url": "https://example.com/summarize",
+    "description": "Summarize long articles to short notes.",
+    "categories": [
+      "Text"
+    ],
+    "tags": [
+      "nlp",
+      "summarization",
+      "text"
+    ]
+  }
+]
